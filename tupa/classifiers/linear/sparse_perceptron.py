@@ -162,10 +162,11 @@ class SparsePerceptron(Perceptron):
         ret.is_frozen = True
         return ret
 
-    def save_model(self, filename, d):
-        super().save_model(filename, d)
+    def save_model(self, filename, d, save_model=True):
+        super().save_model(filename, d, save_model=save_model)
         d["min_update"] = self.min_update
-        save_dict(filename + ".data", self.copy_model())
+        if save_model:
+            save_dict(filename + ".data", self.copy_model())
 
     def load_model(self, filename, d):
         self.model.clear()

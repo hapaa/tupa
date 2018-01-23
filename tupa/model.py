@@ -1,5 +1,9 @@
+import gzip
+import os
+import shutil
 from collections import OrderedDict
 from enum import Enum
+from glob import glob
 
 from .action import Actions
 from .classifiers.classifier import Classifier
@@ -177,17 +181,18 @@ class Model:
                      feature_extractor=self.feature_extractor.finalize(),
                      classifier=self.classifier.finalize(finished_epoch=finished_epoch))
 
-    def save(self):
+    def save(self, save_model=True):
         """
         Save feature and classifier parameters to files
         """
         if self.filename is not None:
             self.init_model()
             try:
-                self.feature_extractor.save(self.filename, save_init=False)
+                if save_model:
+                    self.feature_extractor.save(self.filename, save_init=False)
                 node_labels = self.feature_extractor.params.get(NODE_LABEL_KEY)
                 skip_labels = (NODE_LABEL_KEY,) if node_labels and node_labels.size else ()
-                self.classifier.save(self.filename, skip_labels=skip_labels)
+                self.classifier.save(self.filename, skip_labels=skip_labels, save_model=save_model)
                 Config().save(self.filename)
             except Exception as e:
                 raise IOError("Failed saving model to '%s'" % self.filename) from e
@@ -217,6 +222,20 @@ class Model:
                 raise
             except Exception as e:
                 raise IOError("Failed loading model from '%s'" % self.filename) from e
+
+    def backup(self, restore=False):
+        if self.filename is not None:
+            for filename in glob(self.filename + ".{data,meta,json,enum}" + (".gz" if restore else "")):
+                if os.path.exists(filename):
+                    if restore:
+                        print("Restoring '%s'..." % filename)
+                        with open(filename[:-3], "wb") as f_out, gzip.open(filename, "rb") as f_in:
+                            shutil.copyfileobj(f_in, f_out)
+                        os.remove(filename)
+                    else:
+                        print("Backing up '%s'..." % filename)
+                        with open(filename, "rb") as f_in, gzip.open(filename + ".gz", "wb") as f_out:
+                            shutil.copyfileobj(f_in, f_out)
 
     def restore(self, model, feature_extractor=None, classifier=None, is_finalized=None):
         """

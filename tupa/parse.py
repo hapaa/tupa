@@ -397,8 +397,8 @@ class Parser:
         model = self.model
         self.model = self.model.finalize(finished_epoch=finished_epoch)
         if self.dev:
-            if not self.best_score:
-                self.model.save()
+            self.model.backup()
+            self.model.save()
             print("Evaluating on dev passages")
             passage_scores = [s for _, s in self.parse(self.dev, mode=ParseMode.dev, evaluate=True)]
             scores = Scores(passage_scores)
@@ -411,11 +411,11 @@ class Parser:
             if average_score >= self.best_score:
                 print("Better than previous best score (%.3f)" % self.best_score)
                 self.model.classifier.best_score = average_score
-                if self.best_score:
-                    self.model.save()
+                self.model.save(save_model=False)
                 self.best_score = average_score
             else:
                 print("Not better than previous best score (%.3f)" % self.best_score)
+                self.model.backup(restore=True)
         elif last or self.args.save_every is not None:
             self.model.save()
         if not last:

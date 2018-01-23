@@ -81,7 +81,7 @@ class Classifier:
         """
         pass
 
-    def save(self, filename, skip_labels=()):
+    def save(self, filename, skip_labels=(), save_model=True):
         """
         Save all parameters to file
         """
@@ -98,10 +98,10 @@ class Classifier:
             ("epoch", self.epoch),
             ("best_score", self.best_score),
         ))
-        self.save_model(filename, d)
+        self.save_model(filename, d, save_model=save_model)
         save_json(filename + ".json", d)
 
-    def save_model(self, filename, d):
+    def save_model(self, filename, d, save_model=True):
         """
         Save all parameters to file
         """

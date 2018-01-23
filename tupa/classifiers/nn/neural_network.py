@@ -276,8 +276,8 @@ class NeuralNetwork(Classifier, SubModel):
         d = SubModel.load_sub_model(self, d, *args)
         self.args.loss = self.loss = d["loss"]
 
-    def save_model(self, filename, d):
-        Classifier.save_model(self, filename, d)
+    def save_model(self, filename, d, save_model=True):
+        Classifier.save_model(self, filename, d, save_model=save_model)
         self.finalize()
         values = []
         for model in self.sub_models():
@@ -286,11 +286,12 @@ class NeuralNetwork(Classifier, SubModel):
                 print(model.params_str())
         if self.args.verbose:
             print(self)
-        remove_existing(filename + ".data", filename + ".meta")
-        try:
-            dy.save(filename, tqdm(values, desc="Saving model to '%s'" % filename, unit="param", file=sys.stdout))
-        except ValueError as e:
-            print("Failed saving model: %s" % e)
+        if save_model:
+            remove_existing(filename + ".data", filename + ".meta")
+            try:
+                dy.save(filename, tqdm(values, desc="Saving model to '%s'" % filename, unit="param", file=sys.stdout))
+            except ValueError as e:
+                print("Failed saving model: %s" % e)
 
     def load_model(self, filename, d):
         self.model = None

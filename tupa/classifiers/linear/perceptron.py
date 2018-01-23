@@ -57,8 +57,8 @@ class Perceptron(Classifier):
     def update_learning_rate(self):
         self.learning_rate = self.initial_learning_rate / (1.0 + self.epoch * self.learning_rate_decay)
 
-    def save_model(self, filename, d):
-        super().save_model(filename, d)
+    def save_model(self, filename, d, save_model=True):
+        super().save_model(filename, d, save_model=save_model)
         d.update((
             ("initial_learning_rate", self.initial_learning_rate),
         ))
